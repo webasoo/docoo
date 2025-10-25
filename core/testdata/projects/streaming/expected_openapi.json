@@ -1,0 +1,138 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Auto Generated API",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/download/{name}": {
+      "get": {
+        "operationId": "streaming.downloadHandler",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Success"
+          }
+        },
+        "summary": "downloadHandler",
+        "tags": [
+          "streaming"
+        ]
+      }
+    },
+    "/dynamic/alpha": {
+      "get": {
+        "operationId": "streaming.dynamicHandler",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success"
+          }
+        },
+        "summary": "dynamicHandler",
+        "tags": [
+          "streaming"
+        ]
+      }
+    },
+    "/dynamic/beta": {
+      "get": {
+        "operationId": "streaming.dynamicHandler",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success"
+          }
+        },
+        "summary": "dynamicHandler",
+        "tags": [
+          "streaming"
+        ]
+      }
+    },
+    "/ping": {
+      "head": {
+        "operationId": "streaming.pingHandler",
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "summary": "pingHandler",
+        "tags": [
+          "streaming"
+        ]
+      }
+    },
+    "/stream": {
+      "get": {
+        "operationId": "streaming.streamHandler",
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Success"
+          }
+        },
+        "summary": "streamHandler",
+        "tags": [
+          "streaming"
+        ]
+      }
+    }
+  },
+  "components": {}
+}

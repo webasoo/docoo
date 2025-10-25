@@ -1,0 +1,2 @@
+# Go build cache used when running go build/test with a custom location
+.gocache/

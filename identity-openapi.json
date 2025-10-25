@@ -1,0 +1,801 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Auto Generated API",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/clients": {
+      "get": {
+        "description": "List retrieves all clients with pagination\n\nGet a paginated list of all OAuth2 clients",
+        "operationId": "handler.List",
+        "parameters": [
+          {
+            "description": "Page number default(1)",
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Page size default(10)",
+            "in": "query",
+            "name": "page_size",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Search by name or identifier",
+            "in": "query",
+            "name": "search",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter by active status",
+            "in": "query",
+            "name": "active",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/dto_ListClientsResponse"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/dto_ErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/dto_ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Error"
+          },
+          "fiber.StatusOK": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/dto_ListClientsResponse"
+                }
+              }
+            },
+            "description": "Response"
+          }
+        },
+        "summary": "List all clients",
+        "tags": [
+          "Clients"
+        ]
+      },
+      "post": {
+        "description": "Create creates a new client\n\nCreate a new OAuth2 client with the provided information",
+        "operationId": "handler.Create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/dto_CreateClientRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/dto_ClientResponse"
+                }
+              }
+            },
+            "description": "Created"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/dto_ErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/dto_ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/dto_ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Error"
+          },
+          "fiber.StatusBadRequest": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "Error": {
+                      "type": "string"
+                    },
+                    "Message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "Error",
+                    "Message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Response"
+          },
+          "fiber.StatusCreated": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/dto_ClientResponse"
+                }
+              }
+            },
+            "description": "Response"
+          }
+        },
+        "summary": "Create a new client",
+        "tags": [
+          "Clients"
+        ]
+      }
+    },
+    "/api/v1/clients/{id}": {
+      "delete": {
+        "description": "Delete deletes a client\n\nSoft delete an OAuth2 client by marking it as inactive",
+        "operationId": "handler.Delete",
+        "parameters": [
+          {
+            "description": "Client ID format(uuid)",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/dto_SuccessResponse"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/dto_ErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/dto_ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/dto_ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Error"
+          },
+          "fiber.StatusBadRequest": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "Error": {
+                      "type": "string"
+                    },
+                    "Message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "Error",
+                    "Message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Response"
+          },
+          "fiber.StatusOK": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "Message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "Message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Response"
+          }
+        },
+        "summary": "Delete a client",
+        "tags": [
+          "Clients"
+        ]
+      },
+      "get": {
+        "description": "Get retrieves a single client by ID\n\nGet detailed information about a specific OAuth2 client",
+        "operationId": "handler.Get",
+        "parameters": [
+          {
+            "description": "Client ID format(uuid)",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/dto_ClientResponse"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/dto_ErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/dto_ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/dto_ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Error"
+          },
+          "fiber.StatusBadRequest": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "Error": {
+                      "type": "string"
+                    },
+                    "Message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "Error",
+                    "Message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Response"
+          },
+          "fiber.StatusOK": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/dto_ClientResponse"
+                }
+              }
+            },
+            "description": "Response"
+          }
+        },
+        "summary": "Get a client by ID",
+        "tags": [
+          "Clients"
+        ]
+      },
+      "put": {
+        "description": "Update updates an existing client\n\nUpdate an existing OAuth2 client with the provided information",
+        "operationId": "handler.Update",
+        "parameters": [
+          {
+            "description": "Client ID format(uuid)",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/dto_UpdateClientRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/dto_ClientResponse"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/dto_ErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/dto_ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/dto_ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/dto_ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Error"
+          },
+          "fiber.StatusBadRequest": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "Error": {
+                      "type": "string"
+                    },
+                    "Message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "Error",
+                    "Message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Response"
+          },
+          "fiber.StatusOK": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/dto_ClientResponse"
+                }
+              }
+            },
+            "description": "Response"
+          }
+        },
+        "summary": "Update a client",
+        "tags": [
+          "Clients"
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "dto_ClientResponse": {
+        "properties": {
+          "active": {
+            "type": "boolean"
+          },
+          "base_url": {
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "created_by": {
+            "$ref": "#/components/schemas/uuid_UUID"
+          },
+          "deleted_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "grant_types": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "id": {
+            "$ref": "#/components/schemas/uuid_UUID"
+          },
+          "identifier": {
+            "type": "string"
+          },
+          "logout_url": {
+            "type": "string"
+          },
+          "managers": {
+            "items": {
+              "$ref": "#/components/schemas/dto_ManagerInfo"
+            },
+            "type": "array"
+          },
+          "name": {
+            "type": "string"
+          },
+          "redirect_urls": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "refresh_expiry": {
+            "type": "integer"
+          },
+          "scopes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "secret": {
+            "type": "string"
+          },
+          "token_expiry": {
+            "type": "integer"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updated_by": {
+            "$ref": "#/components/schemas/uuid_UUID"
+          }
+        },
+        "required": [
+          "active",
+          "base_url",
+          "created_at",
+          "created_by",
+          "deleted_at",
+          "grant_types",
+          "id",
+          "identifier",
+          "logout_url",
+          "managers",
+          "name",
+          "redirect_urls",
+          "refresh_expiry",
+          "scopes",
+          "token_expiry",
+          "updated_at",
+          "updated_by"
+        ],
+        "type": "object"
+      },
+      "dto_CreateClientRequest": {
+        "properties": {
+          "base_url": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "grant_types": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "identifier": {
+            "type": "string"
+          },
+          "logout_url": {
+            "type": "string"
+          },
+          "managers": {
+            "items": {
+              "$ref": "#/components/schemas/uuid_UUID"
+            },
+            "type": "array"
+          },
+          "name": {
+            "type": "string"
+          },
+          "redirect_urls": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "refresh_expiry": {
+            "type": "integer"
+          },
+          "scopes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "secret": {
+            "type": "string"
+          },
+          "token_expiry": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "base_url",
+          "grant_types",
+          "identifier",
+          "logout_url",
+          "managers",
+          "name",
+          "redirect_urls",
+          "refresh_expiry",
+          "scopes",
+          "token_expiry"
+        ],
+        "type": "object"
+      },
+      "dto_ErrorResponse": {
+        "properties": {
+          "error": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "error",
+          "message"
+        ],
+        "type": "object"
+      },
+      "dto_ListClientsResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/dto_ClientResponse"
+            },
+            "type": "array"
+          },
+          "page": {
+            "type": "integer"
+          },
+          "page_size": {
+            "type": "integer"
+          },
+          "total": {
+            "type": "integer"
+          },
+          "total_pages": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "data",
+          "page",
+          "page_size",
+          "total",
+          "total_pages"
+        ],
+        "type": "object"
+      },
+      "dto_ManagerInfo": {
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "id": {
+            "$ref": "#/components/schemas/uuid_UUID"
+          },
+          "username": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "id",
+          "username"
+        ],
+        "type": "object"
+      },
+      "dto_SuccessResponse": {
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "message"
+        ],
+        "type": "object"
+      },
+      "dto_UpdateClientRequest": {
+        "properties": {
+          "base_url": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "grant_types": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "identifier": {
+            "type": "string"
+          },
+          "logout_url": {
+            "type": "string"
+          },
+          "managers": {
+            "items": {
+              "$ref": "#/components/schemas/uuid_UUID"
+            },
+            "type": "array"
+          },
+          "name": {
+            "type": "string"
+          },
+          "redirect_urls": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "refresh_expiry": {
+            "type": "integer"
+          },
+          "scopes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "secret": {
+            "type": "string"
+          },
+          "token_expiry": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "uuid_UUID": {
+        "type": "object"
+      }
+    }
+  }
+}

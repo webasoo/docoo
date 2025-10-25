@@ -1,0 +1,278 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Auto Generated API",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "description": "Returns basic service status",
+        "operationId": "sampleapp.health",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "Status": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "Status"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success"
+          }
+        },
+        "summary": "Health check",
+        "tags": [
+          "Health"
+        ]
+      }
+    },
+    "/users": {
+      "post": {
+        "description": "Parses a JSON body and returns the created record",
+        "operationId": "sampleapp.createUser",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/sampleapp_userRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/sampleapp_userResponse"
+                }
+              }
+            },
+            "description": "Created"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/sampleapp_errorResponse"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "fiber.StatusBadRequest": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "Error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "Error"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Response"
+          },
+          "fiber.StatusCreated": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "Email": {
+                      "$ref": "#/components/schemas/req_Email"
+                    },
+                    "ID": {
+                      "type": "string"
+                    },
+                    "Name": {
+                      "$ref": "#/components/schemas/req_Name"
+                    }
+                  },
+                  "required": [
+                    "Email",
+                    "ID",
+                    "Name"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Response"
+          }
+        },
+        "summary": "Create user",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/users/{id}": {
+      "get": {
+        "description": "Returns a user by identifier",
+        "operationId": "sampleapp.getUser",
+        "parameters": [
+          {
+            "description": "User identifier",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Include extended profile",
+            "in": "query",
+            "name": "verbose",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "Email": {
+                      "type": "string"
+                    },
+                    "ID": {
+                      "type": "string"
+                    },
+                    "Name": {
+                      "type": "string"
+                    },
+                    "Verbose": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "Email",
+                    "ID",
+                    "Name",
+                    "Verbose"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/sampleapp_errorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "fiber.StatusNotFound": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "Error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "Error"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Response"
+          }
+        },
+        "summary": "Fetch user",
+        "tags": [
+          "Users"
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "req_Email": {
+        "type": "object"
+      },
+      "req_Name": {
+        "type": "object"
+      },
+      "sampleapp_errorResponse": {
+        "properties": {
+          "error": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "type": "object"
+      },
+      "sampleapp_userRequest": {
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "name"
+        ],
+        "type": "object"
+      },
+      "sampleapp_userResponse": {
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "verbose": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "email",
+          "id",
+          "name"
+        ],
+        "type": "object"
+      }
+    }
+  }
+}
