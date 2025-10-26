@@ -31,9 +31,9 @@
             "description": "Success"
           }
         },
-        "summary": "downloadHandler",
+        "summary": "DownloadHandler",
         "tags": [
-          "streaming"
+          "Download"
         ]
       }
     },
@@ -61,9 +61,9 @@
             "description": "Success"
           }
         },
-        "summary": "dynamicHandler",
+        "summary": "DynamicHandler",
         "tags": [
-          "streaming"
+          "Dynamic"
         ]
       }
     },
@@ -91,9 +91,9 @@
             "description": "Success"
           }
         },
-        "summary": "dynamicHandler",
+        "summary": "DynamicHandler",
         "tags": [
-          "streaming"
+          "Dynamic"
         ]
       }
     },
@@ -105,9 +105,9 @@
             "description": "No Content"
           }
         },
-        "summary": "pingHandler",
+        "summary": "PingHandler",
         "tags": [
-          "streaming"
+          "Ping"
         ]
       }
     },
@@ -127,9 +127,9 @@
             "description": "Success"
           }
         },
-        "summary": "streamHandler",
+        "summary": "StreamHandler",
         "tags": [
-          "streaming"
+          "Stream"
         ]
       }
     }

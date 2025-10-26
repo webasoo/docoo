@@ -93,9 +93,9 @@
             "description": "Bad Request"
           }
         },
-        "summary": "searchHandler",
+        "summary": "SearchHandler",
         "tags": [
-          "queryvariants"
+          "Search"
         ]
       }
     }

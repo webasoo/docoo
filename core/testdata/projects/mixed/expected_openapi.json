@@ -67,9 +67,9 @@
             "description": "Bad Request"
           }
         },
-        "summary": "uploadHandler",
+        "summary": "UploadHandler",
         "tags": [
-          "mixed"
+          "Upload"
         ]
       }
     },
@@ -137,9 +137,9 @@
             "description": "Bad Request"
           }
         },
-        "summary": "computeHandler",
+        "summary": "ComputeHandler",
         "tags": [
-          "mixed"
+          "Compute"
         ]
       }
     },
@@ -182,9 +182,9 @@
             "description": "Success"
           }
         },
-        "summary": "cheapestHandler",
+        "summary": "CheapestHandler",
         "tags": [
-          "mixed"
+          "Cheapest"
         ]
       }
     },
@@ -286,9 +286,9 @@
             "description": "Bad Request"
           }
         },
-        "summary": "historyBySourceHandler",
+        "summary": "HistoryBySourceHandler",
         "tags": [
-          "mixed"
+          "HistoryBySource"
         ]
       }
     },
@@ -316,9 +316,9 @@
             "description": "Success"
           }
         },
-        "summary": "healthHandler",
+        "summary": "HealthHandler",
         "tags": [
-          "mixed"
+          "Health"
         ]
       }
     }

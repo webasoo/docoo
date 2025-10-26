@@ -67,9 +67,9 @@
             "description": "Bad Request"
           }
         },
-        "summary": "submitHandler",
+        "summary": "SubmitHandler",
         "tags": [
-          "multipart"
+          "Submit"
         ]
       }
     }

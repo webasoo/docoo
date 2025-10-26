@@ -10,6 +10,8 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"unicode"
+	"unicode/utf8"
 )
 
 // OpenAPI models the minimal structure we need to serialise the generated document.
@@ -71,7 +73,7 @@ func GenerateOpenAPI(routes []RouteInfo, handlers map[string]HandlerInfo, types 
 			if len(handler.Notes) > 0 {
 				summary = handler.Notes[0]
 			} else {
-				summary = handler.Name
+				summary = deriveDefaultSummary(handler, route)
 			}
 		}
 
@@ -84,8 +86,12 @@ func GenerateOpenAPI(routes []RouteInfo, handlers map[string]HandlerInfo, types 
 		}
 
 		tags := handler.Tags
-		if len(tags) == 0 && handler.Package != "" {
-			tags = []string{handler.Package}
+		if len(tags) == 0 {
+			if tag := deriveDefaultTag(handler, route); tag != "" {
+				tags = []string{tag}
+			} else if handler.Package != "" {
+				tags = []string{handler.Package}
+			}
 		}
 		if len(tags) > 0 {
 			operation["tags"] = tags
@@ -124,6 +130,137 @@ func GenerateOpenAPI(routes []RouteInfo, handlers map[string]HandlerInfo, types 
 	}
 
 	return json.MarshalIndent(doc, "", "  ")
+}
+
+func deriveDefaultSummary(handler HandlerInfo, route RouteInfo) string {
+	name := strings.TrimSpace(handler.Name)
+	if isGenericHandlerName(name) {
+		base := deriveHandlerBaseName(handler, route)
+		verb := titleizeHTTPMethod(route.Method)
+		if base != "" && verb != "" {
+			return verb + base
+		}
+		if base != "" {
+			return base
+		}
+	}
+	if name != "" {
+		return upperFirst(name)
+	}
+	if trimmed := strings.TrimSpace(route.Path); trimmed != "" {
+		trimmed = strings.Trim(trimmed, "/")
+		if trimmed != "" {
+			parts := strings.Split(trimmed, "/")
+			for i, part := range parts {
+				parts[i] = upperFirst(camelizeIdentifier(part))
+			}
+			return strings.Join(parts, " ")
+		}
+	}
+	if verb := titleizeHTTPMethod(route.Method); verb != "" {
+		return verb
+	}
+	return "Handler"
+}
+
+func deriveDefaultTag(handler HandlerInfo, route RouteInfo) string {
+	base := deriveHandlerBaseName(handler, route)
+	if base == "" {
+		return ""
+	}
+	return upperFirst(base)
+}
+
+func deriveHandlerBaseName(handler HandlerInfo, route RouteInfo) string {
+	if recv := strings.TrimSpace(handler.Receiver); recv != "" {
+		return trimHandlerSuffix(recv)
+	}
+	if exprBase := extractBaseFromHandlerExpr(route.HandlerExpr); exprBase != "" {
+		return trimHandlerSuffix(exprBase)
+	}
+	pkg := strings.TrimSpace(handler.Package)
+	if pkg != "" && !strings.EqualFold(pkg, "handler") {
+		return camelizeIdentifier(pkg)
+	}
+	return ""
+}
+
+func trimHandlerSuffix(name string) string {
+	name = strings.TrimSpace(name)
+	if name == "" {
+		return ""
+	}
+	return trimSuffixCI(name, "Handler")
+}
+
+func trimSuffixCI(s, suffix string) string {
+	if len(s) < len(suffix) {
+		return s
+	}
+	if strings.EqualFold(s[len(s)-len(suffix):], suffix) {
+		return s[:len(s)-len(suffix)]
+	}
+	return s
+}
+
+func extractBaseFromHandlerExpr(expr string) string {
+	expr = strings.TrimSpace(expr)
+	if expr == "" {
+		return ""
+	}
+	parts := strings.Split(expr, ".")
+	if len(parts) < 2 {
+		return camelizeIdentifier(expr)
+	}
+	candidate := strings.TrimSpace(parts[len(parts)-2])
+	candidate = strings.Trim(candidate, "&* ")
+	candidate = strings.TrimSuffix(candidate, "()")
+	return camelizeIdentifier(candidate)
+}
+
+func camelizeIdentifier(input string) string {
+	input = strings.TrimSpace(input)
+	if input == "" {
+		return ""
+	}
+	if strings.ContainsAny(input, "_- ") {
+		chunks := strings.FieldsFunc(input, func(r rune) bool {
+			return r == '_' || r == '-' || r == ' '
+		})
+		for i, chunk := range chunks {
+			chunks[i] = upperFirst(strings.ToLower(chunk))
+		}
+		return strings.Join(chunks, "")
+	}
+	return upperFirst(input)
+}
+
+func upperFirst(s string) string {
+	if s == "" {
+		return ""
+	}
+	r, size := utf8.DecodeRuneInString(s)
+	if r == utf8.RuneError && size == 0 {
+		return ""
+	}
+	return string(unicode.ToUpper(r)) + s[size:]
+}
+
+func titleizeHTTPMethod(method string) string {
+	method = strings.TrimSpace(strings.ToLower(method))
+	if method == "" {
+		return ""
+	}
+	return upperFirst(method)
+}
+
+func isGenericHandlerName(name string) bool {
+	switch strings.ToLower(strings.TrimSpace(name)) {
+	case "", "handle", "serve", "servehttp":
+		return true
+	default:
+		return false
+	}
 }
 
 func buildRequestBody(handler HandlerInfo, builder *componentBuilder) map[string]interface{} {

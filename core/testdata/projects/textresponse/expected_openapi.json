@@ -13,9 +13,9 @@
             "description": "Accepted"
           }
         },
-        "summary": "acceptedHandler",
+        "summary": "AcceptedHandler",
         "tags": [
-          "textresponse"
+          "Accepted"
         ]
       }
     },
@@ -27,9 +27,9 @@
             "description": "Found"
           }
         },
-        "summary": "redirectHandler",
+        "summary": "RedirectHandler",
         "tags": [
-          "textresponse"
+          "Redirect"
         ]
       }
     },
@@ -48,9 +48,9 @@
             "description": "Success"
           }
         },
-        "summary": "helloHandler",
+        "summary": "HelloHandler",
         "tags": [
-          "textresponse"
+          "Hello"
         ]
       }
     }

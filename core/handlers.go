@@ -21,6 +21,7 @@ type HandlerInfo struct {
 	Name             string
 	Package          string
 	File             string
+	Receiver         string
 	Summary          string
 	Description      string
 	Notes            []string
@@ -159,6 +160,7 @@ func analyzeHandlersInFile(filePath string, routes []RouteInfo, registry *TypeRe
 			Name:            fn.Name.Name,
 			Package:         node.Name.Name,
 			File:            filePath,
+			Receiver:        extractReceiverType(fn),
 			Responses:       make(map[string]string),
 			ResponseSchemas: make(map[string]Schema),
 			queryParamHints: make(map[string]*queryParamHint),
@@ -241,6 +243,7 @@ func analyzeHandlersInPackage(importPath, dir string, routes []RouteInfo, regist
 					Name:            fn.Name.Name,
 					Package:         pkg.Name,
 					File:            filePath,
+					Receiver:        extractReceiverType(fn),
 					Responses:       make(map[string]string),
 					ResponseSchemas: make(map[string]Schema),
 					queryParamHints: make(map[string]*queryParamHint),
@@ -264,6 +267,25 @@ func analyzeHandlersInPackage(importPath, dir string, routes []RouteInfo, regist
 	}
 
 	return handlerInfos, nil
+}
+
+func extractReceiverType(fn *ast.FuncDecl) string {
+	if fn == nil || fn.Recv == nil || len(fn.Recv.List) == 0 {
+		return ""
+	}
+	recv := fn.Recv.List[0]
+	if recv == nil {
+		return ""
+	}
+	switch t := recv.Type.(type) {
+	case *ast.StarExpr:
+		if ident, ok := t.X.(*ast.Ident); ok && ident != nil {
+			return ident.Name
+		}
+	case *ast.Ident:
+		return t.Name
+	}
+	return ""
 }
 
 func ensurePathParameters(info *HandlerInfo, route RouteInfo) {
