@@ -15,6 +15,7 @@ type ProjectConfig struct {
 	RoutePaths    []string // directories to scan for routes; defaults to WorkspaceRoot
 	SkipPrefixes  []string // path prefixes (e.g. /swagger) to ignore from the generated spec
 	OutputPath    string   // destination for GenerateAndSaveOpenAPI; relative paths resolved against WorkspaceRoot
+	ProjectName   string   // optional override for the generated document title/tagline
 }
 
 // GenerateProjectOpenAPI discovers routes and handlers for the current project and returns
@@ -49,7 +50,12 @@ func GenerateProjectOpenAPI(configs ...ProjectConfig) ([]byte, error) {
 		return nil, fmt.Errorf("core: no handlers discovered under %s", root)
 	}
 
-	return GenerateOpenAPI(routes, handlers, registry)
+	projectName := strings.TrimSpace(cfg.ProjectName)
+	if projectName == "" {
+		projectName = deriveProjectName(root)
+	}
+
+	return GenerateOpenAPI(routes, handlers, registry, projectName)
 }
 
 // GenerateAndSaveOpenAPI builds the project OpenAPI document and writes it to disk.
@@ -183,6 +189,27 @@ func collectRoutes(paths []string, skipPrefixes []string) ([]RouteInfo, error) {
 	})
 
 	return result, nil
+}
+
+func deriveProjectName(root string) string {
+	root = strings.TrimSpace(root)
+	if root == "" {
+		return ""
+	}
+	if modulePath, err := modulePathFromRoot(root); err == nil && strings.TrimSpace(modulePath) != "" {
+		modulePath = strings.TrimSpace(modulePath)
+		if idx := strings.LastIndex(modulePath, "/"); idx >= 0 && idx < len(modulePath)-1 {
+			modulePath = modulePath[idx+1:]
+		}
+		if modulePath != "" {
+			return modulePath
+		}
+	}
+	base := strings.TrimSpace(filepath.Base(root))
+	if base != "" && base != "." && base != string(filepath.Separator) {
+		return base
+	}
+	return "Project"
 }
 
 type routeSkipper struct {

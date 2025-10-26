@@ -194,7 +194,7 @@ func (r *TypeRegistry) IndexWorkspace(root string) error {
 		fset := token.NewFileSet()
 		node, parseErr := parser.ParseFile(fset, path, nil, parser.ParseComments)
 		if parseErr != nil {
-			return parseErr
+			return nil
 		}
 		pkgName := node.Name.Name
 		for _, decl := range node.Decls {

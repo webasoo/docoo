@@ -31,7 +31,7 @@ handlers, registry, err := core.BuildHandlerIndex(routes, ".")
 if err != nil {
     log.Fatalf("analyse handlers: %v", err)
 }
-spec, err := core.GenerateOpenAPI(routes, handlers, registry)
+spec, err := core.GenerateOpenAPI(routes, handlers, registry, "example-project")
 if err != nil {
     log.Fatalf("generate openapi: %v", err)
 }

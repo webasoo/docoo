@@ -15,6 +15,11 @@ import (
 )
 
 // OpenAPI models the minimal structure we need to serialise the generated document.
+const (
+	docooName = "docoo"
+	docooURL  = "https://github.com/webasoo/docoo"
+)
+
 type OpenAPI struct {
 	OpenAPI    string                 `json:"openapi"`
 	Info       map[string]interface{} `json:"info"`
@@ -37,7 +42,7 @@ type Components struct {
 type Schema map[string]interface{}
 
 // GenerateOpenAPI builds an OpenAPI JSON spec from route and handler info.
-func GenerateOpenAPI(routes []RouteInfo, handlers map[string]HandlerInfo, types *TypeRegistry) ([]byte, error) {
+func GenerateOpenAPI(routes []RouteInfo, handlers map[string]HandlerInfo, types *TypeRegistry, projectName string) ([]byte, error) {
 	if len(routes) == 0 {
 		return nil, fmt.Errorf("no routes discovered")
 	}
@@ -119,12 +124,24 @@ func GenerateOpenAPI(routes []RouteInfo, handlers map[string]HandlerInfo, types 
 		return nil, fmt.Errorf("no routes with handler metadata available")
 	}
 
-	doc := OpenAPI{
-		OpenAPI: "3.0.0",
-		Info: map[string]interface{}{
-			"title":   "Auto Generated API",
-			"version": "1.0.0",
+	title := "Auto Generated API"
+	if trimmed := strings.TrimSpace(projectName); trimmed != "" {
+		title = fmt.Sprintf("%s API (Auto Generated)", trimmed)
+	}
+
+	info := map[string]interface{}{
+		"title":       title,
+		"version":     "1.0.0",
+		"description": fmt.Sprintf("Generated with [%s](%s).", docooName, docooURL),
+		"x-generated-by": map[string]interface{}{
+			"name": docooName,
+			"url":  docooURL,
 		},
+	}
+
+	doc := OpenAPI{
+		OpenAPI:    "3.0.0",
+		Info:       info,
 		Paths:      paths,
 		Components: components,
 	}
