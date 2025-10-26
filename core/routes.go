@@ -302,7 +302,8 @@ func handlerInfoFromCall(call *ast.CallExpr, imports, bindings map[string]string
 	if len(call.Args) < 2 {
 		return "", "", ""
 	}
-	switch h := call.Args[1].(type) {
+	handlerIdx := len(call.Args) - 1
+	switch h := call.Args[handlerIdx].(type) {
 	case *ast.Ident:
 		return h.Name, h.Name, ""
 	case *ast.SelectorExpr:
