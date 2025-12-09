@@ -13,6 +13,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"unicode"
 )
 
 // HandlerInfo captures the relevant metadata needed to describe a handler in OpenAPI output.
@@ -517,6 +518,12 @@ func populateFromBody(body *ast.BlockStmt, info *HandlerInfo, registry *TypeRegi
 						var typ string
 						if len(results) > i {
 							typ = results[i]
+						}
+						// If lookup failed or we have a selector call, try package-aware inference
+						if typ == "" || (call.Fun != nil && isSelectorCall(call)) {
+							if inferred := inferTypeFromFunctionName(call); inferred != "" {
+								typ = inferred
+							}
 						}
 						if typ == "" {
 							typ = inferTypeFromExpr(call, registry)
@@ -1364,6 +1371,11 @@ func inferTypeFromExpr(expr ast.Expr, registry *TypeRegistry) string {
 				}
 			}
 		}
+		// Fallback: Try to infer type from function name or selector
+		// e.g., FromServiceTagSearchResult() -> TagSearchResult, ToDTO() -> DTO
+		if fname := inferTypeFromFunctionName(v); fname != "" {
+			return fname
+		}
 	case *ast.UnaryExpr:
 		if v.Op == token.AND {
 			return inferTypeFromExpr(v.X, registry)
@@ -1372,6 +1384,137 @@ func inferTypeFromExpr(expr ast.Expr, registry *TypeRegistry) string {
 		return v.Name
 	}
 	return ""
+}
+
+// isSelectorCall checks if the call expression uses a selector (e.g., pkg.Func())
+func isSelectorCall(call *ast.CallExpr) bool {
+	if call == nil || call.Fun == nil {
+		return false
+	}
+	_, ok := call.Fun.(*ast.SelectorExpr)
+	return ok
+}
+
+// inferTypeFromFunctionName attempts to infer the return type from the function name.
+// Uses intelligent pattern matching to detect converter functions and extract likely return types.
+// Also preserves package qualifiers when called via selector (e.g., httpdto.FromServiceX -> httpdto.X)
+func inferTypeFromFunctionName(call *ast.CallExpr) string {
+	if call == nil {
+		return ""
+	}
+
+	// Check if it's a selector expression (e.g., httpdto.FromServiceTagSearchResult)
+	if sel, ok := call.Fun.(*ast.SelectorExpr); ok && sel.Sel != nil {
+		fname := sel.Sel.Name
+		pkgPart := exprToString(sel.X)
+
+		// Try various converter patterns
+		if inferred := inferReturnTypeFromFunctionName(fname); inferred != "" {
+			// Return with package qualifier if available
+			if pkgPart != "" {
+				return pkgPart + "." + inferred
+			}
+			return inferred
+		}
+	}
+
+	// Try bare function name
+	fname := functionName(call)
+	if inferred := inferReturnTypeFromFunctionName(fname); inferred != "" {
+		return inferred
+	}
+
+	return ""
+}
+
+// inferReturnTypeFromFunctionName analyzes a function name to infer its likely return type.
+// Uses pattern matching for common converter function naming conventions.
+func inferReturnTypeFromFunctionName(fname string) string {
+	if fname == "" {
+		return ""
+	}
+
+	// Common converter prefixes and their likely return type patterns
+	patterns := []struct {
+		prefix string
+		suffix string // what to add if not present
+	}{
+		{"FromService", "Result"},
+		{"From", ""},
+		{"To", ""},
+		{"New", ""},
+		{"ConvertTo", ""},
+		{"MapTo", ""},
+		{"TransformTo", ""},
+	}
+
+	for _, pattern := range patterns {
+		if strings.HasPrefix(fname, pattern.prefix) {
+			candidate := strings.TrimPrefix(fname, pattern.prefix)
+			if candidate == "" {
+				continue
+			}
+
+			// If it already ends with the expected suffix, return as-is
+			if pattern.suffix != "" && strings.HasSuffix(candidate, pattern.suffix) {
+				return candidate
+			}
+
+			// For FromService, add "Result" if the candidate looks like a compound type name
+			// (contains multiple camelCase words) and doesn't already have a type suffix
+			if pattern.suffix == "Result" && isCompoundTypeName(candidate) && !hasTypeSuffix(candidate) {
+				return candidate + pattern.suffix
+			}
+
+			// For other cases, try to be smart about common suffixes
+			if strings.HasSuffix(candidate, "Response") || strings.HasSuffix(candidate, "Request") {
+				// Convert Response/Request to Result
+				return strings.TrimSuffix(strings.TrimSuffix(candidate, "Response"), "Request") + "Result"
+			}
+
+			return candidate
+		}
+	}
+
+	// Try infix patterns (e.g., ResponseToResult, DTOToModel)
+	infixPatterns := []string{"To", "From", "2"}
+	for _, infix := range infixPatterns {
+		if idx := strings.LastIndex(fname, infix); idx > 0 {
+			// Take the part after the infix
+			candidate := fname[idx+len(infix):]
+			if candidate != "" {
+				return candidate
+			}
+		}
+	}
+
+	return ""
+}
+
+// isCompoundTypeName checks if a name looks like a compound type name (multiple camelCase words)
+func isCompoundTypeName(name string) bool {
+	if len(name) < 2 {
+		return false
+	}
+	// Check if it has multiple uppercase letters (camelCase)
+	upperCount := 0
+	for _, r := range name {
+		if unicode.IsUpper(r) {
+			upperCount++
+		}
+	}
+	return upperCount > 1
+}
+
+// hasTypeSuffix checks if a name already has a common type suffix
+func hasTypeSuffix(name string) bool {
+	suffixes := []string{"Result", "Response", "Request", "DTO", "Model", "Entity", "VO", "BO"}
+	for _, suffix := range suffixes {
+		if strings.HasSuffix(name, suffix) {
+			return true
+		}
+	}
+	return false
 }
 
 func lookupFunctionReturnTypes(registry *TypeRegistry, call *ast.CallExpr, expected int) []string {

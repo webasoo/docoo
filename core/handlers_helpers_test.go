@@ -251,3 +251,43 @@ func checkParamType(t *testing.T, params []Parameter, name string, expectSlice b
 	}
 	t.Fatalf("param %s not found", name)
 }
+
+func TestInferTypeFromFunctionName(t *testing.T) {
+	tests := []struct {
+		code     string
+		expected string
+	}{
+		{"FromServiceTagSearchResult()", "TagSearchResult"},
+		{"FromServiceLocations(x)", "Locations"},
+		{"FromServiceWarehouseLocations()", "WarehouseLocationsResult"},
+		{"ToDTO()", "DTO"},
+		{"NewUser()", "User"},
+		{"New()", ""},
+		{"FromService()", "Service"},
+		{"SomeRandomFunc()", ""},
+		// Selector expressions should preserve package qualifier
+		{"httpdto.FromServiceTagSearchResult()", "httpdto.TagSearchResult"},
+		{"httpdto.FromServiceWarehouseLocations()", "httpdto.WarehouseLocationsResult"},
+		{"pkg.ToDTO(x)", "pkg.DTO"},
+		{"service.NewUser()", "service.User"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.code, func(t *testing.T) {
+			expr, err := parser.ParseExpr(tt.code)
+			if err != nil {
+				t.Fatalf("parse error: %v", err)
+			}
+
+			call, ok := expr.(*ast.CallExpr)
+			if !ok {
+				t.Fatalf("expected CallExpr, got %T", expr)
+			}
+
+			result := inferTypeFromFunctionName(call)
+			if result != tt.expected {
+				t.Errorf("inferTypeFromFunctionName(%q) = %q, want %q", tt.code, result, tt.expected)
+			}
+		})
+	}
+}
