@@ -653,6 +653,9 @@ func handleReturnResponses(ret *ast.ReturnStmt, info *HandlerInfo, varTypes map[
 		if handleResponseHelper(call, info, varTypes, registry) {
 			continue
 		}
+		if inferImplicitResponse(call, info, varTypes, registry) {
+			continue
+		}
 	}
 }
 
@@ -696,6 +699,50 @@ func handleResponseHelper(call *ast.CallExpr, info *HandlerInfo, varTypes map[st
 	default:
 		return false
 	}
+}
+
+func inferImplicitResponse(call *ast.CallExpr, info *HandlerInfo, varTypes map[string]string, registry *TypeRegistry) bool {
+	if call == nil || info == nil {
+		return false
+	}
+
+	// 1. Locate the ctx variable among call arguments
+	ctxIndex := -1
+	for i, arg := range call.Args {
+		if ident, ok := arg.(*ast.Ident); ok {
+			if _, exists := info.ctxVars[ident.Name]; exists {
+				ctxIndex = i
+				break
+			}
+		}
+	}
+
+	if ctxIndex == -1 {
+		// Not a response helper, because no ctx param is passed
+		return false
+	}
+
+	// 2. Determine payload: last non-ctx argument
+	var payload ast.Expr
+	for i := len(call.Args) - 1; i >= 0; i-- {
+		if i == ctxIndex {
+			continue
+		}
+		payload = call.Args[i]
+		break
+	}
+
+	if payload == nil {
+		return false
+	}
+
+	// 3. Default status = 200 (annotations may override)
+	status := "200"
+
+	// 4. Register inferred response
+	addResponseFromExpr(info, status, payload, varTypes, registry)
+
+	return true
 }
 
 func handleAssignmentForQuery(assign *ast.AssignStmt, info *HandlerInfo, varTypes map[string]string, bindings map[string]string) {
