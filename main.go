@@ -68,6 +68,8 @@ func runGenerate(args []string) error {
 	fs.SetOutput(os.Stdout)
 	output := fs.String("o", "", "output file (default <module-root>/openapi.json)")
 	root := fs.String("root", "", "workspace root to scan (defaults to current module)")
+	title := fs.String("title", "", "override the generated document title")
+	enableAuthUI := fs.Bool("enable-auth", false, "include Bearer auth + global security in generated openapi.json")
 	var routes stringSliceFlag
 	var skips stringSliceFlag
 	fs.Var(&routes, "route", "additional directory to scan for routes (repeatable)")
@@ -90,12 +92,16 @@ func runGenerate(args []string) error {
 	cfg := core.ProjectConfig{
 		RoutePaths:   routes,
 		SkipPrefixes: skips,
+		EnableAuthUI: *enableAuthUI,
 	}
 	if strings.TrimSpace(*root) != "" {
 		cfg.WorkspaceRoot = strings.TrimSpace(*root)
 	}
 	if strings.TrimSpace(*output) != "" {
 		cfg.OutputPath = strings.TrimSpace(*output)
+	}
+	if strings.TrimSpace(*title) != "" {
+		cfg.ProjectName = strings.TrimSpace(*title)
 	}
 
 	dst, _, err := core.GenerateAndSaveOpenAPI(cfg)

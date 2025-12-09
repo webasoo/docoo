@@ -16,9 +16,22 @@ func Handler(spec []byte) fiber.Handler {
 	return adaptor.HTTPHandler(swagger.Handler(spec))
 }
 
+// HandlerWithOptions returns a Fiber handler that mounts the Swagger UI under the request path
+// and applies the provided swagger.UIOptions when serving the index page.
+func HandlerWithOptions(spec []byte, opts swagger.UIOptions) fiber.Handler {
+	return adaptor.HTTPHandler(swagger.HandlerWithOptions(spec, opts))
+}
+
 // RegisterWithSpec attaches GET handlers for /swagger and /swagger/* to the provided app using the given document.
 func RegisterWithSpec(app *fiber.App, spec []byte) {
 	wrapped := Handler(spec)
+	app.Get("/swagger", wrapped)
+	app.Get("/swagger/*", wrapped)
+}
+
+// RegisterWithSpecAndOptions attaches the Swagger UI routes using runtime UI options.
+func RegisterWithSpecAndOptions(app *fiber.App, spec []byte, opts swagger.UIOptions) {
+	wrapped := HandlerWithOptions(spec, opts)
 	app.Get("/swagger", wrapped)
 	app.Get("/swagger/*", wrapped)
 }
@@ -32,6 +45,14 @@ func Register(app *fiber.App) error {
 	return RegisterFile(app, path)
 }
 
+func RegisterWithConfig(app *fiber.App, cfg swagger.UIOptions) error {
+	path, err := defaultSpecPath()
+	if err != nil {
+		return err
+	}
+	return RegisterFileWithOptions(app, path, cfg)
+}
+
 // RegisterFile loads an OpenAPI document from disk and mounts the Swagger UI routes.
 func RegisterFile(app *fiber.App, path string) error {
 	data, err := os.ReadFile(path)
@@ -39,6 +60,15 @@ func RegisterFile(app *fiber.App, path string) error {
 		return fmt.Errorf("fiberswagger: read spec %q: %w", path, err)
 	}
 	RegisterWithSpec(app, data)
+	return nil
+}
+
+func RegisterFileWithOptions(app *fiber.App, path string, opts swagger.UIOptions) error {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return fmt.Errorf("fiberswagger: read spec %q: %w", path, err)
+	}
+	RegisterWithSpecAndOptions(app, data, opts)
 	return nil
 }
 

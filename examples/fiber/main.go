@@ -9,6 +9,7 @@ import (
 	sampleapp "github.com/webasoo/docoo/examples/sampleapp"
 	fiberscalar "github.com/webasoo/docoo/fiber-scalar"
 	fiberswagger "github.com/webasoo/docoo/fiber-swagger"
+	"github.com/webasoo/docoo/swagger"
 )
 
 func main() {
@@ -18,7 +19,7 @@ func main() {
 
 	app := fiber.New()
 	sampleapp.Register(app)
-	if err := fiberswagger.Register(app); err != nil {
+	if err := fiberswagger.RegisterWithConfig(app, swagger.UIOptions{PersistAuthorization: true}); err != nil {
 		log.Fatalf("register swagger: %v", err)
 	}
 	if err := fiberscalar.Register(app); err != nil {

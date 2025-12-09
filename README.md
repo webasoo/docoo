@@ -51,6 +51,8 @@ Key flags:
 -root <path>     # project/module root to scan (defaults to cwd module)
 -route <dir>     # add extra directories to scan for routes (repeatable)
 -skip <prefix>   # ignore URLs with the given prefix (repeatable)
+-title <name>    # override the generated document title (optional)
+-enable-auth    # include Bearer auth + global security requirement in output
 ```
 
 For automation you can wire the CLI into Go’s generation workflow:
@@ -97,6 +99,24 @@ if err := fiberscalar.Register(app); err != nil {
 }
 app.Listen(":8080")
 ```
+
+If you prefer the Swagger UI to be generated at runtime (for example when
+you want the UI to include authentication info), you can generate the
+OpenAPI document with `EnableAuthUI` enabled and register it in one step:
+
+```go
+app := fiber.New()
+cfg := swagger.UIOptions{PersistAuthorization: true}
+if err := fiberswagger.RegisterWithConfig(app, cfg); err != nil {
+        log.Fatal(err)
+}
+app.Listen(":8080")
+```
+
+Notes:
+
+- When `PersistAuthorization` is true the Swagger UI will persist the
+  authorization header in local storage, so it can be reused across requests.
 
 ### Chi / Gin
 

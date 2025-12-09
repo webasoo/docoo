@@ -16,6 +16,7 @@ type ProjectConfig struct {
 	SkipPrefixes  []string // path prefixes (e.g. /swagger) to ignore from the generated spec
 	OutputPath    string   // destination for GenerateAndSaveOpenAPI; relative paths resolved against WorkspaceRoot
 	ProjectName   string   // optional override for the generated document title/tagline
+	EnableAuthUI  bool     // include Bearer auth + global security requirement in generated OpenAPI doc
 }
 
 // GenerateProjectOpenAPI discovers routes and handlers for the current project and returns
@@ -55,7 +56,7 @@ func GenerateProjectOpenAPI(configs ...ProjectConfig) ([]byte, error) {
 		projectName = deriveProjectName(root)
 	}
 
-	return GenerateOpenAPI(routes, handlers, registry, projectName)
+	return GenerateOpenAPI(routes, handlers, registry, projectName, cfg.EnableAuthUI)
 }
 
 // GenerateAndSaveOpenAPI builds the project OpenAPI document and writes it to disk.

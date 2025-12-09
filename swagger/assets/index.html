@@ -20,7 +20,10 @@
       url: '/swagger/openapi.json',
       dom_id: '#swagger-ui',
       presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
-      layout: 'StandaloneLayout'
+      layout: 'StandaloneLayout',
+      // Persist authorization (stores auth in localStorage so it survives reloads)
+      // This token is replaced at runtime by the server when the UI is served.
+      persistAuthorization: PERSIST_AUTH_PLACEHOLDER
     });
     window.ui = ui;
   };

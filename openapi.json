@@ -1,8 +1,13 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "Auto Generated API",
-    "version": "1.0.0"
+    "description": "Generated with [docoo](https://github.com/webasoo/docoo).",
+    "title": "docoo API (Auto Generated)",
+    "version": "1.0.0",
+    "x-generated-by": {
+      "name": "docoo",
+      "url": "https://github.com/webasoo/docoo"
+    }
   },
   "paths": {
     "/health": {
@@ -162,7 +167,7 @@
                       "type": "string"
                     },
                     "Name": {
-                      "type": "string"
+                      "$ref": "#/components/schemas/strings_Upper"
                     },
                     "Verbose": {
                       "type": "string"
@@ -271,6 +276,9 @@
           "id",
           "name"
         ],
+        "type": "object"
+      },
+      "strings_Upper": {
         "type": "object"
       }
     }

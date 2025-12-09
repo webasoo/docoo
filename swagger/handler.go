@@ -1,12 +1,14 @@
 package swagger
 
 import (
+	"bytes"
 	"fmt"
 	"io/fs"
 	"mime"
 	"net/http"
 	"os"
 	"path"
+	"strconv"
 	"strings"
 )
 
@@ -27,14 +29,31 @@ func initAssetFS() fs.FS {
 
 // Handler returns an http.Handler that serves Swagger UI assets and the provided spec.
 func Handler(spec []byte) http.Handler {
+	return HandlerWithOptions(spec, UIOptions{})
+}
+
+// UIOptions controls runtime Swagger UI tweaks applied when serving the index.
+type UIOptions struct {
+	PersistAuthorization bool
+}
+
+// HandlerWithOptions returns an http.Handler that serves Swagger UI assets and the provided spec
+// while applying `opts` when serving the index page (for example injecting persistAuthorization).
+func HandlerWithOptions(spec []byte, opts UIOptions) http.Handler {
 	specCopy := append([]byte(nil), spec...)
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch target := resolveTarget(r.URL.Path); target {
 		case "", indexFile:
-			if !serveAsset(w, indexFile) {
+			// load the embedded index and replace the placeholder token with true/false
+			data, err := fs.ReadFile(assetFS, indexFile)
+			if err != nil {
 				http.Error(w, "swagger: index not available", http.StatusInternalServerError)
+				return
 			}
+			replaced := bytes.ReplaceAll(data, []byte("PERSIST_AUTH_PLACEHOLDER"), []byte(strconv.FormatBool(opts.PersistAuthorization)))
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			_, _ = w.Write(replaced)
 		case specFile:
 			w.Header().Set("Content-Type", "application/json")
 			_, _ = w.Write(specCopy)
@@ -47,30 +66,42 @@ func Handler(spec []byte) http.Handler {
 }
 
 // HandlerFromFile loads the OpenAPI document from disk and returns a Swagger UI handler.
-func HandlerFromFile(path string) (http.Handler, error) {
+func HandlerFromFile(path string, opts UIOptions) (http.Handler, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("swagger: read spec %q: %w", path, err)
 	}
-	return Handler(data), nil
+	return HandlerWithOptions(data, opts), nil
 }
 
 // Register adds default handlers under /swagger/ using the provided spec.
 func Register(spec []byte) {
-	handler := Handler(spec)
+	RegisterWithOptions(spec, UIOptions{})
+}
+
+// RegisterWithOptions registers the Swagger UI handlers under /swagger using the provided spec
+// and applies the given UI options when serving the index page.
+func RegisterWithOptions(spec []byte, opts UIOptions) {
+	handler := HandlerWithOptions(spec, opts)
 	http.Handle("/swagger", handler)
 	http.Handle("/swagger/", handler)
 }
 
-// RegisterFile is a convenience helper that loads openapi.json from disk and wires the standard routes.
-func RegisterFile(path string) error {
-	handler, err := HandlerFromFile(path)
+// RegisterFileWithOptions loads openapi.json from disk and wires the standard routes
+// while applying the provided UI options when serving the index page.
+func RegisterFileWithOptions(path string, opts UIOptions) error {
+	handler, err := HandlerFromFile(path, opts)
 	if err != nil {
 		return err
 	}
 	http.Handle("/swagger", handler)
 	http.Handle("/swagger/", handler)
 	return nil
+}
+
+// RegisterFile is a convenience helper that loads openapi.json from disk and wires the standard routes.
+func RegisterFile(path string) error {
+	return RegisterFileWithOptions(path, UIOptions{})
 }
 
 func resolveTarget(raw string) string {

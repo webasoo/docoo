@@ -25,6 +25,7 @@ type OpenAPI struct {
 	Info       map[string]interface{} `json:"info"`
 	Paths      map[string]PathItem    `json:"paths"`
 	Components Components             `json:"components,omitempty"`
+	Security   []map[string][]string  `json:"security,omitempty"`
 }
 
 // PathItem represents the operations available on a single path.
@@ -35,14 +36,15 @@ type Operation map[string]interface{}
 
 // Components wraps reusable schema definitions.
 type Components struct {
-	Schemas map[string]Schema `json:"schemas,omitempty"`
+	Schemas         map[string]Schema                 `json:"schemas,omitempty"`
+	SecuritySchemes map[string]map[string]interface{} `json:"securitySchemes,omitempty"`
 }
 
 // Schema is a free-form JSON schema definition.
 type Schema map[string]interface{}
 
 // GenerateOpenAPI builds an OpenAPI JSON spec from route and handler info.
-func GenerateOpenAPI(routes []RouteInfo, handlers map[string]HandlerInfo, types *TypeRegistry, projectName string) ([]byte, error) {
+func GenerateOpenAPI(routes []RouteInfo, handlers map[string]HandlerInfo, types *TypeRegistry, projectName string, enableAuthUI bool) ([]byte, error) {
 	if len(routes) == 0 {
 		return nil, fmt.Errorf("no routes discovered")
 	}
@@ -117,6 +119,12 @@ func GenerateOpenAPI(routes []RouteInfo, handlers map[string]HandlerInfo, types 
 		responses := buildResponses(handler, builder)
 		operation["responses"] = responses
 
+		// Allow opt-out per-operation via handler.NoAuth; if set, explicitly
+		// add an empty security array to override any global security requirement.
+		if handler.NoAuth {
+			operation["security"] = []map[string][]string{}
+		}
+
 		pathItem[strings.ToLower(route.Method)] = operation
 	}
 
@@ -144,6 +152,23 @@ func GenerateOpenAPI(routes []RouteInfo, handlers map[string]HandlerInfo, types 
 		Info:       info,
 		Paths:      paths,
 		Components: components,
+	}
+
+	// If enabled, add a Bearer auth security scheme and a global security
+	// requirement that applies to all operations unless an operation
+	// explicitly overrides it (e.g. with an empty `security: []`).
+	if enableAuthUI {
+		if doc.Components.SecuritySchemes == nil {
+			doc.Components.SecuritySchemes = make(map[string]map[string]interface{})
+		}
+		doc.Components.SecuritySchemes["BearerAuth"] = map[string]interface{}{
+			"type":         "http",
+			"scheme":       "bearer",
+			"bearerFormat": "JWT",
+		}
+		doc.Security = []map[string][]string{{
+			"BearerAuth": {},
+		}}
 	}
 
 	return json.MarshalIndent(doc, "", "  ")

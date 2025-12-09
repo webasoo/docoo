@@ -41,6 +41,7 @@ type HandlerInfo struct {
 	queryParamHints  map[string]*queryParamHint
 	EmptyBodyStatus  map[string]bool
 	ctxVars          map[string]struct{}
+	NoAuth           bool
 }
 
 // Parameter captures non-body inputs declared via annotations.
@@ -450,6 +451,8 @@ func populateFromDoc(doc *ast.CommentGroup, info *HandlerInfo) {
 			parseParamAnnotation(rest, info)
 		case "@Success", "@Failure":
 			parseResponseAnnotation(fields, info)
+		case "@NoAuth":
+			info.NoAuth = true
 		}
 	}
 }
